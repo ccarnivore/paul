@@ -87,11 +87,13 @@ After init, project is ready for first PLAN.
    - Continue with init (not a hard stop)
 
 4. **Additional v1 artifact check** (even if no base binary):
-   - Check for `.base/data/*.json` files (v1's JSON store):
+   - `.base/data/*.json` alone is NOT evidence of v1 — the current `@chrisai/base` npm kit (2.x/3.x) legitimately creates those files on a fresh install, and no 1.x was ever published. Only corroborated legacy state counts:
      ```bash
-     ls .base/data/*.json 2>/dev/null
+     ls .base/data/*.json 2>/dev/null && ls .base/workspace.json 2>/dev/null
      ```
-   - If found: display v1 warning (same hard stop as step 2) — these are v1 artifacts that indicate an incompatible installation
+   - **If `base_v2_available = true` (step 2 found the Rust binary):** silent pass — skip this check entirely.
+   - **If `.base/data/*.json` exists AND `.base/workspace.json` also exists:** current-generation npm kit — silent pass.
+   - **If `.base/data/*.json` exists AND `.base/workspace.json` is absent:** likely legacy state — display the v1 warning from step 2, but as a ⚠️ warning with a "continue anyway? [y/N]" prompt rather than an unconditional hard stop, since the heuristic is circumstantial.
 </step>
 
 <step name="detect_planning_md" priority="early">
