@@ -1,36 +1,12 @@
 ---
 name: paul:complete-milestone
-description: Mark current milestone as complete
+description: Complete and archive a verified milestone
 argument-hint: "[version]"
-allowed-tools: [Read, Write, Edit, Bash, Glob]
+allowed-tools: [Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion]
 ---
 
-<objective>
-Complete the current milestone, archive it, and evolve PROJECT.md.
+Arguments: $ARGUMENTS
 
-**When to use:** All phases in current milestone are complete and verified.
-</objective>
-
-<execution_context>
 @~/.claude/paul-framework/workflows/complete-milestone.md
-</execution_context>
 
-<context>
-$ARGUMENTS
-
-@.paul/PROJECT.md
-@.paul/STATE.md
-@.paul/ROADMAP.md
-@.paul/MILESTONES.md
-</context>
-
-<process>
-Follow workflow: @~/.claude/paul-framework/workflows/complete-milestone.md
-</process>
-
-<success_criteria>
-- [ ] Milestone archived with summary
-- [ ] PROJECT.md evolved with learnings
-- [ ] Git tag created for version
-- [ ] STATE.md updated to reflect completion
-</success_criteria>
+Follow the workflow and preserve project-specific release and commit rules.

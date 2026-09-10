@@ -1,36 +1,12 @@
 ---
 name: paul:plan
-description: Enter PLAN phase for current or new plan
-argument-hint: "[phase-plan]"
-allowed-tools: [Read, Write, Glob, AskUserQuestion]
+description: Create or revise an executable plan
+argument-hint: "[plan ID/path or context]"
+allowed-tools: [Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion, Skill]
 ---
 
-<objective>
-Create or continue a PLAN for the specified phase.
+Arguments: $ARGUMENTS
 
-**When to use:** Starting new work or resuming incomplete plan.
-</objective>
-
-<execution_context>
 @~/.claude/paul-framework/workflows/plan-phase.md
-@~/.claude/paul-framework/templates/PLAN.md
-@~/.claude/paul-framework/references/plan-format.md
-</execution_context>
 
-<context>
-$ARGUMENTS
-
-@.paul/PROJECT.md
-@.paul/STATE.md
-@.paul/ROADMAP.md
-</context>
-
-<process>
-Follow workflow: @~/.claude/paul-framework/workflows/plan-phase.md
-</process>
-
-<success_criteria>
-- [ ] PLAN.md created in correct phase directory
-- [ ] All acceptance criteria defined
-- [ ] STATE.md updated with loop position
-</success_criteria>
+Follow that workflow. Load other framework documents only at the step that needs them. Preserve user/project rules and the mandatory PLAN → APPLY → UNIFY loop.

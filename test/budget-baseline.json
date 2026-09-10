@@ -1,0 +1,8 @@
+{
+  "method": "Unicode characters; direct framework inputs from original HEAD v1.4.0. Excludes project files, source, tools, output, caching and optional workflows.",
+  "stages": {
+    "plan": 29399,
+    "apply": 26378,
+    "unify": 16717
+  }
+}

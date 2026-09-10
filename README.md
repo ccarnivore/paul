@@ -11,7 +11,7 @@
 <br>
 
 ```bash
-npx paul-framework
+node bin/install.js --global
 ```
 
 **Works on Mac, Windows, and Linux.**
@@ -29,6 +29,24 @@ npx paul-framework
 [Why PAUL](#why-paul) · [Getting Started](#getting-started) · [The Loop](#the-loop) · [Commands](#commands) · [How It Works](#how-it-works)
 
 </div>
+
+---
+
+## Optimized Claude Code fork (1.5.0)
+
+Install **from this checkout or its local package** to get these optimizations. The public upstream npm package is a different distribution. Node >=16.7 is required; development tests require Node >=18.
+
+```bash
+# Preview and then replace a project's existing Claude Code PAUL installation
+node bin/install.js --project /absolute/path/to/project --dry-run
+node bin/install.js --project /absolute/path/to/project
+```
+
+The installer backs up replaced files and prints a rollback ID. It preserves `.paul` project data, other commands, extension blocks, and local customizations to unchanged upstream files. Conflicting edits to changed framework files stop the upgrade for review. Restart Claude Code afterward and use `/paul:resume`.
+
+Core commands now load context and references on demand. A dependency-free Node helper performs deterministic state updates, evidence validation and summary generation; Claude still plans, implements and verifies the work. Quickfix retains skills, boundaries and mandatory UNIFY. Existing Markdown projects work without a bulk migration, including explicitly linked `.paul` roots.
+
+See [upgrade and rollback](docs/UPGRADE.md), [runtime and compatibility](docs/RUNTIME.md), and [measurement and validation](docs/OPTIMIZATION.md). Full historical explanations remain installed under `paul-framework/documentation/` for selective consultation.
 
 ---
 
@@ -72,7 +90,7 @@ No sprint ceremonies. No story points. No enterprise theater. Just a system that
 ## Getting Started
 
 ```bash
-npx paul-framework
+node bin/install.js --global
 ```
 
 The installer prompts you to choose:
@@ -108,15 +126,16 @@ Verify with `/paul:help` inside Claude Code.
 ### Staying Updated
 
 ```bash
-npx paul-framework@latest
+node bin/install.js --global --dry-run
+node bin/install.js --global
 ```
 
 <details>
 <summary><strong>Non-interactive Install</strong></summary>
 
 ```bash
-npx paul-framework --global   # Install to ~/.claude/
-npx paul-framework --local    # Install to ./.claude/
+node bin/install.js --global   # Install to ~/.claude/
+node bin/install.js --local    # Install to ./.claude/
 ```
 
 </details>
@@ -469,7 +488,7 @@ For projects with specialized requirements, `.paul/SPECIAL-FLOWS.md` defines ski
 
 **Commands not working as expected?**
 - Run `/paul:help` to verify installation
-- Re-run `npx paul-framework` to reinstall
+- Re-run `node bin/install.js --global` to reinstall
 
 **Loop position seems wrong?**
 - Check `.paul/STATE.md` for current state

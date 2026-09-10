@@ -7,7 +7,7 @@ PAUL_ALWAYS_ON=false
 PAUL_RULE_0=PAUL governs structured AI development via Plan-Apply-Unify loop. Requires .paul/ directory.
 
 # MUST (critical)
-PAUL_RULE_1=LOAD BEFORE EXECUTE: Before ANY /paul:* command, MUST Read the command file (~/.claude/paul-framework/src/commands/{name}.md) AND its execution_context workflow file. NEVER execute PAUL commands from memory or inference - always load the actual files first. If files cannot be loaded, STOP and inform user.
+PAUL_RULE_1=LOAD BEFORE EXECUTE: Before ANY /paul:* command, MUST Read the command file (~/.claude/commands/paul/{name}.md) AND its execution_context workflow file. NEVER execute PAUL commands from memory or inference - always load the actual files first. If files cannot be loaded, STOP and inform user.
 PAUL_RULE_2=No implementation code without approved PLAN.md. Research/exploration OK. Violation = stop, request approval.
 PAUL_RULE_3=Every APPLY must be followed by UNIFY. UNIFY reconciles plan vs actual, updates STATE.md, logs decisions.
 PAUL_RULE_4=Respect PLAN.md "Boundaries" / "DO NOT CHANGE" sections. Stop and confirm before modifying protected items.

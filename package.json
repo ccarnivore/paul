@@ -1,9 +1,10 @@
 {
   "name": "paul-framework",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Plan-Apply-Unify Loop - A structured AI-assisted development framework for Claude Code",
   "bin": {
-    "paul-framework": "bin/install.js"
+    "paul-framework": "bin/install.js",
+    "paul": "bin/paul.js"
   },
   "files": [
     "bin",
@@ -11,7 +12,11 @@
     "src/templates",
     "src/references",
     "src/workflows",
-    "src/rules"
+    "src/rules",
+    "src/runtime",
+    "src/documentation",
+    "src/upstream-hashes.json",
+    "docs"
   ],
   "keywords": [
     "claude",
@@ -32,6 +37,10 @@
     "url": "https://github.com/ChristopherKahler/paul/issues"
   },
   "homepage": "https://github.com/ChristopherKahler/paul#readme",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "check:budget": "node test/budget.js"
+  },
   "engines": {
     "node": ">=16.7.0"
   }
