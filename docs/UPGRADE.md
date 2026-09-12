@@ -53,9 +53,21 @@ Installation rollback does not undo subsequent project work. Runtime state trans
 ```bash
 npm pack --pack-destination /tmp
 mkdir -p /tmp/paul-optimized
-tar -xzf /tmp/paul-framework-1.5.0.tgz -C /tmp/paul-optimized
+tar -xzf /tmp/paul-framework-1.6.0.tgz -C /tmp/paul-optimized
 node /tmp/paul-optimized/package/bin/install.js --project /absolute/project --dry-run
 node /tmp/paul-optimized/package/bin/install.js --project /absolute/project
 ```
 
 No npm dependencies or network download are needed for installation from the checkout or tarball. Node >=16.7 is required. The upstream package name is retained for compatibility; this fork has not been published to npm.
+
+## Safety fix in 1.5.1
+
+Version 1.5.0 had an unsafe section replacement path: it could remove nested sections, duplicate a heading supplied in the replacement body, or append an unrecognized nested heading at the wrong level. Its generated STATE/SUMMARY text also contained fixed U+2014 separators. Update to 1.5.1 before using the runtime again. Existing files are not repaired by upgrading; coordinate with any ongoing repair session rather than modifying its files concurrently.
+
+For an already completed faulty operation, `.paul/runtime/history/<run>.json` retains `changes[i].before` and `after` for each changed file. Compare these with the current file and restore the affected content while retaining later valid work. Do not blindly restore the entire transaction: counters and other files may already be correct. The `recover` command handles a pending transaction journal, not arbitrary completed history entries.
+
+## Context reduction in 1.6.0
+
+Upgrade the Claude Code installation and start a fresh session to load the updated planning workflow. No re-init or project-document migration is necessary: `handoff` reads existing long SUMMARY/RESULT files selectively and never changes their hashes, receipts or counters. Future UNIFY summaries retain outcome/decisions/deviations/issues but reference detailed evidence instead of duplicating it. Existing in-conversation tool outputs are not removed by installation.
+
+New read-only helpers: `handoff`, `result-section`, `plan-check`; history now uses ranked individual words and searches full RESULT evidence too. The PLAN workflow batches discovery, checks size once and uses focused edits. See installed `references/runtime-reading.md` for exact paging semantics. All 1.5.1 structural protections remain active.

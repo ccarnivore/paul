@@ -1,6 +1,6 @@
 'use strict';
 const { inside, read, digest, hash } = require('./files');
-const { replaceSection } = require('./markdown');
+const { replaceSection, headings } = require('./markdown');
 const { updateToml, numeric } = require('./toml');
 const { transaction } = require('./transaction');
 const { phaseStatus, VERSION } = require('./project');
@@ -36,13 +36,21 @@ function update(root, input) {
   const allowed = ['STATE.md','PROJECT.md','ROADMAP.md','config.md','SPECIAL-FLOWS.md'];
   if (!Array.isArray(input.edits) || !input.edits.length) throw new Error('Provide reviewed section edits');
   const updates = {}, preconditions = { ...phaseRevisions, [receiptPath]: raw === null ? null : hash(raw) };
+  const editRanges = [];
   for (const edit of input.edits) {
     if (!allowed.includes(edit.path) || typeof edit.section !== 'string' || typeof edit.content !== 'string') throw new Error('Only named sections of PAUL project documents can be updated');
     const current = read(inside(root, edit.path));
     const currentHash = current === null ? null : hash(current);
     if (edit.sha256 !== currentHash) throw new Error(`Stale edit: ${edit.path}. Refresh context first.`);
+    const targets = headings(current || '').filter(h => h.title.toLowerCase() === edit.section.toLowerCase());
+    if (targets.length !== 1) throw new Error(`Section missing or ambiguous: ${edit.path}/${edit.section}`);
+    const target = targets[0];
+    const child = headings(current || '').find(h => h.start > target.start && h.start < target.end);
+    const end = edit.scope === 'intro' ? (child?.start ?? target.end) : target.end;
+    if (editRanges.some(r => r.path === edit.path && target.start < r.end && end > r.start)) throw new Error('Overlapping section edits; use separate child sections or scope intro for parent text');
+    editRanges.push({ path: edit.path, start: target.start, end });
     preconditions[edit.path] = currentHash;
-    updates[edit.path] = replaceSection(updates[edit.path] ?? current ?? '', edit.section, edit.content);
+    updates[edit.path] = replaceSection(updates[edit.path] ?? current ?? '', edit.section, edit.content, { scope: edit.scope });
   }
   const manifest = read(inside(root,'paul.toml'));
   if (input.manifest && manifest === null) throw new Error('No paul.toml; register/migrate it before requesting manifest changes');

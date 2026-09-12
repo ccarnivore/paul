@@ -1,13 +1,9 @@
 # SUMMARY contract
 
-UNIFY normally renders `{id}-SUMMARY.md` from validated RESULT.json via runtime close. Do not write a second manual summary. For legacy/manual reconciliation retain:
+UNIFY renders SUMMARY from the verified RESULT through runtime `close`; do not fill a second prose template.
 
-- Frontmatter: phase, plan, started, completed, duration, description, type: Summary, result: pass/fail/waived, plan_sha256.
-- Concrete outcome and acceptance criteria results with actual evidence.
-- Every task's status, concerns and approved waivers.
-- Accomplishments and files created/modified/deleted.
-- Verification commands/results and durable log paths.
-- Decisions, deviations, unresolved issues, required skill audit.
-- Next work; phase completion requires a separate roadmap scope review.
+SUMMARY keeps outcome once, reported AC/task statuses, actual waivers, all decisions, deviations and unresolved issues. RESULT retains full AC/task evidence, changed files, verification and skill audit. Those records are linked, not discarded. State every outstanding evidence limitation in issues, not only deep inside a passing AC's evidence.
 
-Use short factual entries and links instead of repeating the plan. Full raw evidence remains on disk. Detailed legacy examples: documentation/SUMMARY-guide.md, loaded only when needed. Absence of old frontmatter fields is not proof of failure or success; inspect legacy evidence.
+For planning, use `handoff --plan ID`, then relevant `result-section` fields or bounded legacy `section` reads. For UNIFY, review complete relevant evidence and project freshness requirements before close. Neither a compact view nor a pass label is a new proof. Phase completion still needs explicit roadmap scope review.
+
+Historical SUMMARYs remain unchanged. Missing legacy metadata is unknown; no automatic pass or reconciliation. Detailed examples: documentation/SUMMARY-guide.md, only when needed.

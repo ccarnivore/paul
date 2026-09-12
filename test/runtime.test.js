@@ -100,3 +100,20 @@ test('phase transition increments phase counter once and preserves summary evide
  const input={schema:1,event_id:'phase-1-complete',action:'transition',phase:'1',scope_evidence:'All roadmap deliverables independently verified',edits:[{path:'ROADMAP.md',section:'Phase 1',sha256:hash(roadmap),content:'Complete; scope verified'}]};
  update(f.root,input);update(f.root,input);assert.equal(numeric(read(path.join(f.root,'paul.toml')),'stats','total_phases'),1);assert.equal(p.phaseReport(f.root,'1').knownUniqueFiles,1);assert.throws(()=>update(f.root,{...input,event_id:'duplicate-phase-close'}),/already transitioned/);
 });
+test('unsafe nested update fails before any file or journal write',t=>{
+ const f=fixture(t);const text='# Roadmap\n\n## Current Milestone\n\nOverview\n\n### Phase 1\n\nEvidence to retain\n';f.write('ROADMAP.md',text);
+ for(const edits of [
+  [{path:'ROADMAP.md',section:'Current Milestone',sha256:hash(text),content:'## Current Milestone\nDuplicated'}],
+  [{path:'ROADMAP.md',section:'Current Milestone',sha256:hash(text),content:'Drops evidence'}],
+  [{path:'ROADMAP.md',section:'Current Milestone',sha256:hash(text),content:'Overview\n### Phase 1\nRetained'}, {path:'ROADMAP.md',section:'Phase 1',sha256:hash(text),content:'Conflicting child edit'}]
+ ]){assert.throws(()=>update(f.root,{schema:1,event_id:'bad-update',action:'roadmap',edits}));assert.equal(read(path.join(f.root,'ROADMAP.md')),text);assert.equal(fs.existsSync(path.join(f.root,'runtime')),false);}
+});
+test('parent intro plus child edit is safe and preserves neighboring sections',t=>{
+ const f=fixture(t);const text='# Roadmap\n\n## Current Milestone\n\nOld intro\n\n### Phase 1\n\nOld status\n\n### Phase 2\n\nUntouched\n';f.write('ROADMAP.md',text);
+ update(f.root,{schema:1,event_id:'nested-safe',action:'roadmap',edits:[{path:'ROADMAP.md',section:'Current Milestone',scope:'intro',sha256:hash(text),content:'New intro'},{path:'ROADMAP.md',section:'Phase 1',sha256:hash(text),content:'Complete'}]});
+ assert.equal(read(path.join(f.root,'ROADMAP.md')),text.replace('Old intro','New intro').replace('Old status','Complete'));
+});
+test('core lifecycle adds no U+2014 to STATE or generated SUMMARY',t=>{
+ const f=fixture(t),check=()=>assert.ok(!read(path.join(f.root,'STATE.md')).includes('\u2014'));
+ p.planReady(f.root,'01-01');check();p.approve(f.root,'01-01','Proceed');check();p.applyComplete(f.root,'01-01',f.result());check();p.close(f.root,'01-01');check();assert.ok(!read(path.join(f.root,p.resolvePlan(f.root,'01-01').summary)).includes('\u2014'));
+});

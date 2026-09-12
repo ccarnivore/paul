@@ -32,7 +32,7 @@ node bin/install.js --global
 
 ---
 
-## Optimized Claude Code fork (1.5.0)
+## Optimized Claude Code fork (1.6.0)
 
 Install **from this checkout or its local package** to get these optimizations. The public upstream npm package is a different distribution. Node >=16.7 is required; development tests require Node >=18.
 

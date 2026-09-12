@@ -1,6 +1,6 @@
 # Executable PLAN template
 
-Save as `.paul/phases/{NN}-{name}/{NN}-{PP}-PLAN.md`. Replace placeholders; omit optional empty sections. Detailed examples: documentation/PLAN-guide.md (read only when needed).
+Save as `.paul/phases/{NN}-{name}/{NN}-{PP}-PLAN.md`. Replace placeholders; omit optional empty sections. Typical size 3–6 KB, advisory. Resolve scope before writing; later changes use focused edits. State requirements once and reference their AC IDs in tasks/checks. Detailed examples: documentation/PLAN-guide.md (read only when needed).
 
 ```markdown
 ---

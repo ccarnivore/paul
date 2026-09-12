@@ -17,7 +17,7 @@ Write JSON beside the plan as `{id}-EVIDENCE.json`, then pass it to `apply-compl
 }
 ```
 
-Acceptance status: pass/fail/waived. Task status: DONE/DONE_WITH_CONCERNS/BLOCKED/SKIPPED. Waived and SKIPPED require `user_approval` with the actual waiver. Record concerns and unresolved issues; blocked work is not success. Include every changed source/config/test file in files, including deletions. Keep large logs on disk, cite paths and relevant failure excerpts. Preserve project-specific verification requirements. Empty arrays explicitly mean none; do not omit relevant decisions or skills.
+Acceptance status: pass/fail/waived. Task status: DONE/DONE_WITH_CONCERNS/BLOCKED/SKIPPED. Waived and SKIPPED require `user_approval` with the actual waiver. Keep outcome brief and factual. Put any unresolved evidence limitation in issues as well as the affected AC/task; a pass label must never hide a missing check. Record concerns and unresolved issues; blocked work is not success. Include every changed source/config/test file in files, including deletions. Keep large logs on disk, cite paths and relevant failure excerpts. Preserve project-specific verification requirements. Empty arrays explicitly mean none; do not omit relevant decisions or skills.
 
 Before UNIFY, `evidence` compares declared files only. It cannot detect stale environments, external dependencies or omitted files. Re-run checks when evidence is stale or project rules require it. Refresh the EVIDENCE input and run apply-complete again; prior results are archived. After close, additional work requires a new plan.
 

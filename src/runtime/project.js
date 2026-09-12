@@ -126,14 +126,20 @@ function context(root, options = {}) {
   output.budget = { chars, targetChars: options.budget || 16000, exceeded: chars > (options.budget || 16000), truncated: false };
   return output;
 }
-function history(root, query = '', limit = 10) {
-  const entries = inventory(root).filter(p => p.endsWith('-SUMMARY.md')).map(rel => {
-    const text = read(inside(root, rel)), fm = frontmatter(text);
-    const lines = text.split('\n');
-    const matches = query ? lines.filter(l => l.toLowerCase().includes(query.toLowerCase())) : [];
-    return { path: `.paul/${rel}`, sha256: hash(text), description: fm.description || lines.find(l => /^\*\*[^*]/.test(l)) || '', result: fm.result || 'legacy-unverified', matches: matches.slice(0,4) };
-  }).filter(e => !query || e.path.toLowerCase().includes(query.toLowerCase()) || e.matches.length);
-  return { total: entries.length, results: entries.slice(-limit).reverse(), truncated: entries.length > limit, instruction: 'Open referenced summaries for complete decisions, evidence and deviations; selection is not proof of irrelevance of other history.' };
+function history(root, query = '', limit = 5, options = {}) {
+  return require('./retrieval').history(root, query, limit, options);
+}
+function handoff(root, argument, options = {}) {
+  return require('./retrieval').handoff(root, resolvePlan(root, argument), options);
+}
+function resultSection(root, argument, options = {}) {
+  return require('./retrieval').resultSection(root, resolvePlan(root, argument), options);
+}
+function planCheck(root, argument) {
+  const plan = resolvePlan(root, argument), bytes = Buffer.byteLength(plan.text), targetBytes = 6144;
+  return { plan: plan.id, path: `.paul/${plan.path}`, sha256: plan.sha256, bytes, targetBytes,
+    exceeded: bytes > targetBytes, ac: plan.ac, tasks: plan.tasks,
+    instruction: bytes > targetBytes ? 'Soft target exceeded. Retain all requirements. Remove duplicated explanations with targeted edits if useful; do not reprint/rewrite the entire plan just to shrink it.' : 'Structure parsed. Review semantics, scope, skills, AC coverage and verification; size is not evidence of quality.' };
 }
 function updateState(state, plan, stage, next, result = '') {
   // Change only known scalar fields; retain all other text, including local rules.
@@ -149,7 +155,7 @@ function updateState(state, plan, stage, next, result = '') {
   }
   let out = fields(state, 'Current Position', {
     Phase: `${plan.phase} (${path.basename(path.dirname(plan.path))})`, Plan: plan.id,
-    Status: `${stage}${result ? ' — ' + result : ''}`, 'Last activity': `${new Date().toISOString()} — ${plan.id}`
+    Status: `${stage}${result ? ' - ' + result : ''}`, 'Last activity': `${new Date().toISOString()} - ${plan.id}`
   });
   const marks = stage === 'PLAN' ? '✓        ○        ○' : stage === 'APPLY' ? '✓        ✓        ○' : '✓        ✓        ✓';
   const oldLoop = section(out, 'Loop Position');
@@ -273,7 +279,29 @@ function renderSummary(plan, r) {
   const cell = s => String(s).replace(/\|/g,'\\|').replace(/\r?\n/g,'<br>');
   const list = xs => xs.length ? xs.map(x => `- ${x}`).join('\n') : 'None.';
   const duration = Math.round((Date.parse(r.completed)-Date.parse(r.started))/60000);
-  return { status, text: `---\nphase: ${JSON.stringify(plan.phase)}\nplan: ${JSON.stringify(plan.id)}\nstarted: ${JSON.stringify(r.started)}\ncompleted: ${JSON.stringify(r.completed)}\nduration: ${JSON.stringify(duration+'min')}\ndescription: ${JSON.stringify(r.outcome)}\ntype: Summary\nabout: ${JSON.stringify(frontmatter(plan.text).about || "")}\nresult: ${status}\nplan_sha256: ${plan.sha256}\n---\n\n# ${plan.id} Summary\n\n${r.outcome}\n\n## Acceptance Criteria Results\n\n| Criterion | Status | Evidence |\n|---|---|---|\n${r.acceptance.map(a => `| ${cell(a.id)} | ${a.status} | ${cell(a.evidence + (a.user_approval ? ' User waiver: '+a.user_approval : ''))} |`).join('\n')}\n\n## Tasks\n\n${list(r.tasks.map(t => `${t.id}: ${t.status} — ${t.evidence}${t.user_approval ? ' User approval: '+t.user_approval : ''}`))}\n\n## Accomplishments\n\n- ${r.outcome}\n\n## Files Created/Modified\n\n${list(r.files.map(f => `${f.path}: ${f.change}`))}\n\n## Verification Results\n\n${list(r.verification)}\n\n## Decisions Made\n\n${list(r.decisions)}\n\n## Deviations from Plan\n\n${list(r.deviations)}\n\n## Issues Encountered\n\n${list(r.issues)}\n\n## Skill Audit\n\n${list(r.skills)}\n\nEvidence: ${plan.result.split('/').pop()}\nPhase completion requires a separate scope review.\n` };
+  const evidence = plan.result.split('/').pop();
+  const lines = [
+    '---', `phase: ${JSON.stringify(plan.phase)}`, `plan: ${JSON.stringify(plan.id)}`,
+    `started: ${JSON.stringify(r.started)}`, `completed: ${JSON.stringify(r.completed)}`,
+    `duration: ${JSON.stringify(duration+'min')}`, `description: ${JSON.stringify(`${plan.id}: ${status}; outcome and limitations in body`)}`,
+    'type: Summary', `about: ${JSON.stringify(frontmatter(plan.text).about || '')}`,
+    `result: ${status}`, 'summary_schema: 2', `plan_sha256: ${plan.sha256}`, '---', '', `# ${plan.id} Summary`, '',
+    '## Accomplishments', '', r.outcome, '',
+    '## Acceptance Criteria Results', '',
+    '| Criterion | Reported status | Full evidence in RESULT |', '|---|---|---|',
+    ...r.acceptance.map((a,i) => `| ${cell(a.id)} | ${a.status} | acceptance[${i}]${a.user_approval ? ' User waiver: '+cell(a.user_approval) : ''} |`), '',
+    '## Tasks', '', list(r.tasks.map((t,i) => `${t.id}: ${t.status} - tasks[${i}]${t.user_approval ? ' User approval: '+t.user_approval : ''}`)), '',
+    '## Decisions Made', '', list(r.decisions), '',
+    '## Deviations from Plan', '', list(r.deviations), '',
+    '## Issues Encountered', '', list(r.issues), '',
+    '## Evidence', '', `Complete evidence: ${evidence}. Outcome, decisions, deviations and issues are retained above.`,
+    'Status labels alone are not proof. AC/task qualifications, full verification, skill audit and file changes remain in RESULT.',
+    'Read relevant fields before reusing evidence: result-section --plan '+plan.id+' --field acceptance --item AC-1.',
+    'Fields: acceptance, tasks, verification, skills, files. Large fields paginate with --offset/--limit.',
+    `Recorded files: ${r.files.length}; verification entries: ${r.verification.length}; skill entries: ${r.skills.length}.`,
+    'Follow project freshness rules. Phase completion requires a separate scope review.', ''
+  ];
+  return { status, text: lines.join('\n') };
 }
 function close(root, argument, review = {}) {
   const before = snapshot(root), plan = resolvePlan(root, argument), receipts = jsonFile(root, 'runtime/receipts.json', {});
@@ -297,4 +325,4 @@ function close(root, argument, review = {}) {
   before[plan.path] = plan.sha256; before[plan.result] = digest(inside(root, plan.result)); before[plan.summary] = existingSummary === null ? null : hash(existingSummary);
   return { plan: plan.id, result: sum.status, summary: `.paul/${plan.summary}`, phaseScopeReviewRequired: true, ...transaction(root, updates, 'unify', before) };
 }
-module.exports = { VERSION, projectRoot, resolvePlan, phaseStatus, phaseReport, context, history, planReady, approve, applyComplete, evidenceStatus, close, renderSummary, validateResult, loopState };
+module.exports = { VERSION, projectRoot, resolvePlan, phaseStatus, phaseReport, context, history, handoff, resultSection, planCheck, planReady, approve, applyComplete, evidenceStatus, close, renderSummary, validateResult, loopState };

@@ -9,6 +9,9 @@ Typical commands from the project root:
 ```bash
 node .claude/paul-framework/runtime/cli.js context --plan 01-01
 node .claude/paul-framework/runtime/cli.js history --query authentication --limit 5
+node .claude/paul-framework/runtime/cli.js handoff --plan 01-01
+node .claude/paul-framework/runtime/cli.js result-section --plan 01-01 --field acceptance --item AC-1
+node .claude/paul-framework/runtime/cli.js plan-check --plan 01-01
 node .claude/paul-framework/runtime/cli.js phase-report --phase 01
 node .claude/paul-framework/runtime/cli.js doctor
 ```
@@ -38,3 +41,11 @@ Transactions check source revisions and use an exclusive lock. A journal contain
 Do not manually duplicate runtime state/ledger writes. Reusing the same operation is idempotent; modifying an already reconciled plan/summary requires review. A phase transition is counted once per phase number; later corrections use reviewed roadmap updates. Existing specialized workflows remain available and use their documented manual paths where not integrated with the runtime. They must respect the same project rules and must not replay completed core transitions.
 
 Detailed original templates/workflows are installed under `documentation/` as historical examples. Current workflow instructions take precedence. Optional CARL integration is not installed automatically; its source command path was corrected to `.claude/commands/paul/`.
+
+## Bounded handoffs and compact SUMMARYs (1.6.0)
+
+Future SUMMARYs store the outcome once and preserve complete decisions, deviations, issues and explicit waivers. Detailed AC/task evidence, file changes, verification and skills remain in the original RESULT, accessible by `result-section`. Nothing is deleted from RESULT. Status labels alone do not establish verification; record missing proof in issues as well as the affected AC evidence.
+
+`handoff` works on existing long documents without rewriting them or changing receipt hashes. It previews a matching RESULT; unmatched or independently changed SUMMARY content is also surfaced, including unknown/German headings and pre-heading text. Source hashes and truncation/pagination are explicit. `history` searches individual words across both SUMMARY and RESULT, ranks coverage and limits serialized output. Limits are output characters (not tokens); `--offset` is an entry offset for history/handoff and a character offset for result-section/bounded section. Native `section` without paging options still returns complete required rules.
+
+`plan-check` is read-only and reports syntax, UTF-8 size and a soft 6 KB target. The planning workflow resolves scope before writing, batches related discovery, and applies targeted corrections instead of printing successive full PLAN drafts. Size never overrides requirements, required skills or fresh verification.
