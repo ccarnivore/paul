@@ -11,7 +11,8 @@
 <br>
 
 ```bash
-node bin/install.js --global
+# From your checkout of https://github.com/ccarnivore/paul
+node bin/install.js --project /absolute/path/to/project
 ```
 
 **Works on Mac, Windows, and Linux.**
@@ -89,14 +90,41 @@ No sprint ceremonies. No story points. No enterprise theater. Just a system that
 
 ## Getting Started
 
+### First installation in a new project
+
+Prerequisites: Git, Node >=16.7 and Claude Code. Use the [optimized fork](https://github.com/ccarnivore/paul) as the installation source.
+
+Clone the fork and enter its directory. If you already have a checkout, use that directory and skip cloning:
+
 ```bash
-node bin/install.js --global
+git clone https://github.com/ccarnivore/paul.git
+cd paul
 ```
 
-The installer prompts you to choose:
-1. **Location** — Global (all projects) or local (current project only)
+From the **PAUL checkout**, install into your new project's directory. Replace `/absolute/path/to/new-project` with your target path:
 
-Verify with `/paul:help` inside Claude Code.
+```bash
+mkdir -p /absolute/path/to/new-project
+node bin/install.js --project /absolute/path/to/new-project --dry-run
+node bin/install.js --project /absolute/path/to/new-project
+```
+
+With the existing checkout at `/home/roman/workspace/paul`, you can also run the installer from any directory:
+
+```bash
+node /home/roman/workspace/paul/bin/install.js --project /absolute/path/to/new-project
+```
+
+This installs the Claude Code commands into `<project>/.claude/commands/paul/` and the framework into `<project>/.claude/paul-framework/`. No `npm install` or build step is required. The installer creates the command files; `/paul:init` creates the project's `.paul/` planning data.
+
+Start a fresh Claude Code session **in the target project**:
+
+```bash
+cd /absolute/path/to/new-project
+claude
+```
+
+Inside Claude Code, run `/paul:help` to verify the commands, then `/paul:init` to set up the project. Continue with `/paul:plan` after initialization. If the project already has `.paul/` data, use `/paul:resume` instead.
 
 ### Quick Workflow
 
@@ -125,18 +153,27 @@ Verify with `/paul:help` inside Claude Code.
 
 ### Staying Updated
 
+From the fork checkout, fetch the latest version and update the same target installation:
+
 ```bash
-node bin/install.js --global --dry-run
-node bin/install.js --global
+git pull --ff-only
+node bin/install.js --project /absolute/path/to/project --dry-run
+node bin/install.js --project /absolute/path/to/project
 ```
 
+Restart Claude Code after updating. Backups and rollback are described in [the upgrade guide](docs/UPGRADE.md).
+
 <details>
-<summary><strong>Non-interactive Install</strong></summary>
+<summary><strong>Other installation targets</strong></summary>
+
+Run these from the fork checkout, or invoke its installer by absolute path:
 
 ```bash
 node bin/install.js --global   # Install to ~/.claude/
-node bin/install.js --local    # Install to ./.claude/
+node /absolute/path/to/paul/bin/install.js --local  # Install to the current directory's .claude/
 ```
+
+With `--local`, first change into the target project. Without a target flag, `node bin/install.js` prompts for global or local installation; `--project` and `--global` are non-interactive.
 
 </details>
 
